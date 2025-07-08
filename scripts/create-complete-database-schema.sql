@@ -111,6 +111,15 @@ CREATE TABLE IF NOT EXISTS public.services (
     duration INTEGER NOT NULL, -- in minutes
     price DECIMAL(10,2) NOT NULL,
     category TEXT,
+    schedule JSONB DEFAULT '{}', -- Service availability schedule
+    tags TEXT[] DEFAULT '{}', -- Service tags for filtering
+    requirements TEXT, -- Special requirements or preparations needed
+    preparation_time INTEGER DEFAULT 0, -- Preparation time in minutes
+    cleanup_time INTEGER DEFAULT 0, -- Cleanup time in minutes
+    max_bookings_per_day INTEGER DEFAULT 20, -- Maximum bookings allowed per day
+    booking_window_days INTEGER DEFAULT 30, -- Days in advance for booking
+    image_url TEXT, -- Service image URL
+    color TEXT DEFAULT '#3B82F6', -- Color for visual identification
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
@@ -144,9 +153,14 @@ CREATE TABLE IF NOT EXISTS public.clients (
     phone TEXT,
     date_of_birth DATE,
     address TEXT,
-    emergency_contact TEXT,
-    emergency_phone TEXT,
-    medical_notes TEXT,
+    emergency_contact JSONB, -- {name: string, phone: string, relationship: string}
+    medical_history TEXT[] DEFAULT '{}',
+    allergies TEXT[] DEFAULT '{}',
+    current_medications TEXT[] DEFAULT '{}',
+    insurance_provider TEXT,
+    insurance_number TEXT,
+    preferred_language TEXT DEFAULT 'Español',
+    communication_preferences JSONB DEFAULT '{"email": true, "sms": true, "phone": false}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
@@ -167,6 +181,8 @@ CREATE TABLE IF NOT EXISTS public.bookings (
     price DECIMAL(10,2) NOT NULL,
     status TEXT CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled', 'no_show')) DEFAULT 'pending',
     notes TEXT,
+    instructions TEXT, -- Special instructions for the booking
+    description TEXT, -- Description of the service/reason for visit
     cancellation_reason TEXT,
     payment_status TEXT CHECK (payment_status IN ('pending', 'paid', 'refunded')) DEFAULT 'pending',
     payment_method TEXT,
@@ -228,6 +244,10 @@ CREATE INDEX IF NOT EXISTS idx_professionals_company_id ON public.professionals(
 CREATE INDEX IF NOT EXISTS idx_workplaces_company_id ON public.workplaces(company_id);
 CREATE INDEX IF NOT EXISTS idx_services_professional_id ON public.services(professional_id);
 CREATE INDEX IF NOT EXISTS idx_services_workplace_id ON public.services(workplace_id);
+CREATE INDEX IF NOT EXISTS idx_services_category ON public.services(category);
+CREATE INDEX IF NOT EXISTS idx_services_is_active ON public.services(is_active);
+CREATE INDEX IF NOT EXISTS idx_services_tags ON public.services USING GIN(tags);
+CREATE INDEX IF NOT EXISTS idx_services_schedule ON public.services USING GIN(schedule);
 CREATE INDEX IF NOT EXISTS idx_clients_user_id ON public.clients(user_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_client_id ON public.bookings(client_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_professional_id ON public.bookings(professional_id);

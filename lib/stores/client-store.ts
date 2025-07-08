@@ -1,129 +1,59 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import type { Profile } from "@/lib/stores/auth-store"
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { Profile } from '@/types/auth';
+import type {
+  ClientProfile,
+  ClientBooking,
+  AvailableService,
+  BookingHistory,
+} from '@/types/client';
 import {
   getMockClientProfile,
   getMockUpcomingBookings,
   getMockPastBookings,
   getMockAvailableServices,
   getMockBookingHistory,
-} from "@/lib/mock-data/client-data"
+} from '@/lib/mock-data/client-data';
 
-export interface ClientProfile {
-  id: string
-  name: string
-  email: string
-  phone: string
-  date_of_birth?: string
-  address?: string
-  emergency_contact?: {
-    name: string
-    phone: string
-    relationship: string
-  }
-  medical_history?: string[]
-  allergies?: string[]
-  current_medications?: string[]
-  insurance_provider?: string
-  insurance_number?: string
-  preferred_language?: string
-  communication_preferences?: {
-    email: boolean
-    sms: boolean
-    phone: boolean
-  }
-  avatar_url?: string
-  created_at: string
-}
-
-export interface ClientBooking {
-  id: string
-  date: string
-  professional: string
-  clinic: string
-  status: "confirmed" | "pending" | "cancelled"
-}
-
-export interface AvailableService {
-  id: string
-  name: string
-  description: string
-  category: string
-  duration: number
-  price: number
-  professional: {
-    id: string
-    name: string
-    specialty: string
-    rating: number
-    avatar_url?: string
-  }
-  location: {
-    id: string
-    name: string
-    address: string
-    phone: string
-  }
-  available_slots: Array<{
-    date: string
-    times: string[]
-  }>
-  is_popular: boolean
-  tags: string[]
-}
-
-export interface BookingHistory {
-  total_bookings: number
-  completed_bookings: number
-  cancelled_bookings: number
-  no_show_bookings: number
-  total_spent: number
-  average_rating_given: number
-  favorite_professional?: string
-  most_booked_service?: string
-  first_booking_date?: string
-  last_booking_date?: string
-}
-
-export type ClientTab = "dashboard" | "bookings" | "history" | "profile"
+export type ClientTab = 'dashboard' | 'bookings' | 'history' | 'profile';
 
 interface ClientState {
   // Current state
-  activeTab: ClientTab
+  activeTab: ClientTab;
 
   // Data
-  profile: Profile | null
-  upcomingBookings: ClientBooking[]
-  pastBookings: ClientBooking[]
-  availableServices: AvailableService[]
-  bookingHistory: BookingHistory
+  profile: ClientProfile | null;
+  upcomingBookings: ClientBooking[];
+  pastBookings: ClientBooking[];
+  availableServices: AvailableService[];
+  bookingHistory: BookingHistory;
 
   // UI state
-  isBookingModalOpen: boolean
-  selectedService: AvailableService | null
+  isBookingModalOpen: boolean;
+  selectedService: AvailableService | null;
 
   // Actions
-  setActiveTab: (tab: ClientTab) => void
-  setProfile: (profile: Profile) => void
+  setActiveTab: (tab: ClientTab) => void;
+  setProfile: (profile: ClientProfile | null) => void;
 
   // Booking actions
-  addBooking: (booking: ClientBooking) => void
-  updateBookingStatus: (id: string, status: ClientBooking["status"]) => void
-  cancelBooking: (id: string) => void
+  addBooking: (booking: ClientBooking) => void;
+  updateBookingStatus: (id: string, status: ClientBooking['status']) => void;
+  cancelBooking: (id: string) => void;
 
   // Service actions
-  setSelectedService: (service: AvailableService | null) => void
-  setBookingModalOpen: (open: boolean) => void
+  setSelectedService: (service: AvailableService | null) => void;
+  setBookingModalOpen: (open: boolean) => void;
 
   // Load data
-  loadData: () => void
+  loadData: () => void;
 }
 
 export const useClientStore = create<ClientState>()(
   persist(
     (set, get) => ({
       // Initial state
-      activeTab: "dashboard",
+      activeTab: 'dashboard',
 
       // Initial data
       profile: null,
@@ -148,11 +78,14 @@ export const useClientStore = create<ClientState>()(
       setProfile: (profile) => set({ profile }),
 
       // Booking actions
-      addBooking: (booking) => set((s) => ({ upcomingBookings: [booking, ...s.upcomingBookings] })),
+      addBooking: (booking) =>
+        set((s) => ({ upcomingBookings: [booking, ...s.upcomingBookings] })),
 
       updateBookingStatus: (id, status) =>
         set((s) => ({
-          upcomingBookings: s.upcomingBookings.map((b) => (b.id === id ? { ...b, status } : b)),
+          upcomingBookings: s.upcomingBookings.map((b) =>
+            b.id === id ? { ...b, status } : b
+          ),
         })),
 
       cancelBooking: (id) =>
@@ -162,7 +95,7 @@ export const useClientStore = create<ClientState>()(
             ...s.pastBookings,
             {
               ...s.upcomingBookings.find((b) => b.id === id)!,
-              status: "cancelled",
+              status: 'cancelled',
             },
           ],
         })),
@@ -179,16 +112,16 @@ export const useClientStore = create<ClientState>()(
           pastBookings: getMockPastBookings(),
           availableServices: getMockAvailableServices(),
           bookingHistory: getMockBookingHistory(),
-        })
+        });
       },
     }),
     {
-      name: "client-storage",
+      name: 'client-storage',
       partialize: (state) => ({
         profile: state.profile,
         upcomingBookings: state.upcomingBookings,
         pastBookings: state.pastBookings,
       }),
-    },
-  ),
-)
+    }
+  )
+);

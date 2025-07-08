@@ -1,17 +1,17 @@
-"use client"
+'use client';
 
-import { useEffect } from "react"
-import { ClientHeader } from "./client-header"
-import { ClientNavigation } from "./client-navigation"
-import { ClientDashboardView } from "./dashboard/client-dashboard-view"
-import { MyBookings } from "./my-bookings"
-import { BookingHistory } from "./booking-history"
-import { MyProfile } from "./my-profile"
-import { useClientStore } from "@/lib/stores/client-store"
-import { useAuthStore } from "@/lib/stores/auth-store"
+import { useEffect } from 'react';
+import { ClientHeader } from './client-header';
+import { ClientNavigation } from './client-navigation';
+import { ClientDashboardView } from './dashboard/client-dashboard-view';
+import { MyBookings } from './my-bookings';
+import { BookingHistory } from './booking-history';
+import MyProfile from './my-profile';
+import { useClientStore } from '@/lib/stores/client-store';
+import { useAuthStore } from '@/lib/stores/auth-store';
 
 export function ClientDashboard() {
-  const { signOut } = useAuthStore()
+  const { profile } = useAuthStore();
   const {
     upcomingBookings,
     availableServices,
@@ -22,43 +22,27 @@ export function ClientDashboard() {
     updateBookingStatus,
     cancelBooking,
     loadData,
-  } = useClientStore()
+  } = useClientStore();
 
   // Load mock data on mount
   useEffect(() => {
     if (upcomingBookings.length === 0) {
-      loadData()
+      loadData();
     }
-  }, [upcomingBookings.length, loadData])
-
-  // Helpers
-  // const upcomingBookings = getUpcomingBookings()
-  // const bookingHistory = getBookingHistory()
+  }, [upcomingBookings.length, loadData]);
 
   return (
     <div className="flex min-h-screen flex-col">
-      <ClientHeader onLogout={signOut} />
+      <ClientHeader />
       <div className="flex flex-1">
-        <ClientNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        <ClientNavigation />
         <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
-          {activeTab === "dashboard" && (
-            <ClientDashboardView
-              upcomingBookings={upcomingBookings}
-              availableServices={availableServices}
-              onBookService={addBooking}
-            />
-          )}
-          {activeTab === "bookings" && (
-            <MyBookings
-              bookings={upcomingBookings}
-              onUpdateBooking={updateBookingStatus}
-              onCancelBooking={cancelBooking}
-            />
-          )}
-          {activeTab === "history" && <BookingHistory bookings={bookingHistory} />}
-          {activeTab === "profile" && <MyProfile />}
+          {activeTab === 'dashboard' && <ClientDashboardView />}
+          {activeTab === 'bookings' && <MyBookings user={profile} />}
+          {activeTab === 'history' && <BookingHistory user={profile} />}
+          {activeTab === 'profile' && <MyProfile />}
         </main>
       </div>
     </div>
-  )
+  );
 }
