@@ -178,7 +178,7 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error) {
           console.error('❌ Error inicializando:', error);
-          set({ isLoading: false, loading: false });
+          set({ isLoading: false, loading: false, initialized: false });
         }
       },
     }),
