@@ -1,45 +1,7 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from './database.types';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-export type Database = {
-  public: {
-    Tables: {
-      profiles: {
-        Row: {
-          id: string
-          email: string
-          full_name: string | null
-          phone: string | null
-          user_type: "Cliente" | "Profesional" | "Empresa"
-          avatar_url: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          email: string
-          full_name?: string | null
-          phone?: string | null
-          user_type?: "Cliente" | "Profesional" | "Empresa"
-          avatar_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          email?: string
-          full_name?: string | null
-          phone?: string | null
-          user_type?: "Cliente" | "Profesional" | "Empresa"
-          avatar_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-    }
-  }
-}
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);

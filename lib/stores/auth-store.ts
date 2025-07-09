@@ -17,8 +17,20 @@ interface AuthState {
     email: string,
     password: string
   ) => Promise<{ data?: Session; error?: AuthError }>;
+  signUp: (
+    email: string,
+    password: string,
+    metadata: {
+      email: string;
+      full_name: string;
+      phone: string;
+      user_type: 'Cliente' | 'Profesional' | 'Empresa';
+      avatar_url: string | null;
+    }
+  ) => Promise<{ error?: AuthError }>;
   signOut: () => Promise<void>;
   setProfile: (profile: Profile | null) => void;
+  updateProfile: (updates: Partial<Profile>) => Promise<void>;
   fetchProfile: (userId: string) => Promise<void>;
   initialize: () => Promise<void>;
 }
@@ -179,6 +191,83 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error('❌ Error inicializando:', error);
           set({ isLoading: false, loading: false, initialized: false });
+        }
+      },
+
+      signUp: async (email, password, metadata) => {
+        console.log('📝 Iniciando proceso de registro...');
+        set({ loading: true, isLoading: true });
+
+        try {
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: metadata,
+            },
+          });
+
+          if (error) {
+            console.error('❌ Error en signUp:', error);
+            set({ loading: false, isLoading: false });
+            return { error };
+          }
+
+          if (data.user) {
+            console.log('✅ Registro exitoso');
+            set({ loading: false, isLoading: false });
+            return {};
+          }
+
+          set({ loading: false, isLoading: false });
+          return {
+            error: { message: 'No se pudo crear la cuenta' } as AuthError,
+          };
+        } catch (error) {
+          console.error('❌ Error inesperado en signUp:', error);
+          set({ loading: false, isLoading: false });
+          return {
+            error: { message: 'Error interno del servidor' } as AuthError,
+          };
+        }
+      },
+
+      updateProfile: async (updates) => {
+        const state = get();
+        if (!state.profile?.id) {
+          console.error('❌ No hay perfil para actualizar');
+          return;
+        }
+
+        console.log('🔄 Actualizando perfil...');
+        set({ loading: true });
+
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .update({
+              ...updates,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', state.profile.id)
+            .select()
+            .single();
+
+          if (error) {
+            console.error('❌ Error actualizando perfil:', error);
+            set({ loading: false });
+            return;
+          }
+
+          if (data) {
+            console.log('✅ Perfil actualizado:', data);
+            set({ profile: data, loading: false });
+          } else {
+            set({ loading: false });
+          }
+        } catch (error) {
+          console.error('❌ Error inesperado actualizando perfil:', error);
+          set({ loading: false });
         }
       },
     }),
