@@ -22,7 +22,6 @@ interface AuthState {
     email: string,
     password: string,
     metadata: {
-      email: string;
       full_name: string;
       phone: string;
       user_type: 'Cliente' | 'Profesional' | 'Empresa';

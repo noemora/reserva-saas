@@ -98,7 +98,6 @@ export function RegisterForm() {
     });
 
     const { error } = await signUp(sanitizedData.email, formData.password, {
-      email: sanitizedData.email,
       full_name: sanitizedData.fullName,
       phone: sanitizedData.phone || '',
       user_type: formData.userType,
@@ -147,7 +146,6 @@ export function RegisterForm() {
     const data = quickData[type];
 
     const { error } = await signUp(data.email, data.password, {
-      email: data.email,
       full_name: data.fullName,
       phone: data.phone,
       user_type: data.userType,
