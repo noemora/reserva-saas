@@ -1,7 +1,7 @@
-import { AuthProvider } from '@/components/providers/auth-provider';
 import '@/app/globals.css';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { AuthInitializer } from '../components/auth-initializer';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={cn(fontSans.variable, 'h-full')}>
       <body className="min-h-full bg-muted/20 antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthInitializer>{children}</AuthInitializer>
       </body>
     </html>
   );

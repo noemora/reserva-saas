@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuthStore } from '@/lib/stores/auth-store';
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { ClientDashboard } from '@/components/client/client-dashboard';
@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
 function AuthenticatedApp() {
-  const { profile, session, isLoading } = useAuth();
+  const { profile, session, isLoading } = useAuthStore();
   const [currentView, setCurrentView] = useState<
     | 'client-dashboard'
     | 'professional-dashboard'
@@ -33,6 +33,24 @@ function AuthenticatedApp() {
         return 'client-dashboard';
     }
   });
+
+  useEffect(() => {
+    if (profile) {
+      switch (profile.user_type) {
+        case 'Cliente':
+          setCurrentView('client-dashboard');
+          break;
+        case 'Profesional':
+          setCurrentView('clinic-selection');
+          break;
+        case 'Empresa':
+          setCurrentView('company-dashboard');
+          break;
+        default:
+          setCurrentView('client-dashboard');
+      }
+    }
+  }, [profile]);
 
   // Mostrar loading mientras se carga el perfil
   if (isLoading) {
@@ -65,25 +83,6 @@ function AuthenticatedApp() {
   const handleClinicSelection = () => {
     setCurrentView('professional-dashboard');
   };
-
-  // Actualizar la vista cuando cambie el perfil
-  useEffect(() => {
-    if (profile) {
-      switch (profile.user_type) {
-        case 'Cliente':
-          setCurrentView('client-dashboard');
-          break;
-        case 'Profesional':
-          setCurrentView('clinic-selection');
-          break;
-        case 'Empresa':
-          setCurrentView('company-dashboard');
-          break;
-        default:
-          setCurrentView('client-dashboard');
-      }
-    }
-  }, [profile]);
 
   switch (currentView) {
     case 'client-dashboard':
@@ -128,7 +127,7 @@ function AuthForms() {
 }
 
 export default function Home() {
-  const { session } = useAuth();
+  const { session } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {

@@ -1,7 +1,7 @@
-"use client"
+'use client';
 
-import { useAuth } from "@/hooks/use-auth"
-import { Button } from "@/components/ui/button"
+import { useAuthStore } from '@/lib/stores/auth-store';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,17 +9,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Bell, LogOut, MapPin, Settings, User } from "lucide-react"
-import type { Professional, Workplace } from "@/types/professional"
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Bell, LogOut, MapPin, Settings, User } from 'lucide-react';
+import type { Professional, Workplace } from '@/types/professional';
 
 interface ProfessionalHeaderProps {
-  professional?: Professional | null
-  workplaces?: Workplace[]
-  selectedWorkplaceId?: string
-  onWorkplaceChange?: (id: string) => void
+  professional?: Professional | null;
+  workplaces?: Workplace[];
+  selectedWorkplaceId?: string;
+  onWorkplaceChange?: (id: string) => void;
 }
 
 export function ProfessionalHeader({
@@ -28,25 +28,30 @@ export function ProfessionalHeader({
   selectedWorkplaceId,
   onWorkplaceChange,
 }: ProfessionalHeaderProps) {
-  const { profile, signOut } = useAuth()
+  const { profile, signOut } = useAuthStore();
 
   /* ------------------------------------------------------------------ */
   /* Helpers                                                            */
   /* ------------------------------------------------------------------ */
-  const fullName = professional?.name || profile?.full_name || professional?.email || profile?.email || "Usuario"
+  const fullName =
+    professional?.name ||
+    profile?.full_name ||
+    professional?.email ||
+    profile?.email ||
+    'Usuario';
 
   const initials = fullName
-    .split(" ")
+    .split(' ')
     .map((w) => w[0])
-    .join("")
+    .join('')
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 
-  const avatarUrl = profile?.avatar_url ?? professional?.avatar_url ?? ""
+  const avatarUrl = profile?.avatar_url ?? professional?.avatar_url ?? '';
 
   const handleLogout = async () => {
-    await signOut()
-  }
+    await signOut();
+  };
 
   /* ------------------------------------------------------------------ */
   /* Render                                                             */
@@ -56,9 +61,11 @@ export function ProfessionalHeader({
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         {/* Left ― Title & badge */}
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-900">Panel Profesional</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Panel Profesional
+          </h1>
           <Badge variant="secondary" className="bg-green-100 text-green-800">
-            {profile?.user_type ?? "Profesional"}
+            {profile?.user_type ?? 'Profesional'}
           </Badge>
         </div>
 
@@ -78,7 +85,7 @@ export function ProfessionalHeader({
               <MapPin className="h-4 w-4 text-gray-500" />
               <select
                 className="rounded-md border px-2 py-1 text-sm"
-                value={selectedWorkplaceId ?? ""}
+                value={selectedWorkplaceId ?? ''}
                 onChange={(e) => onWorkplaceChange?.(e.target.value)}
               >
                 <option value="" disabled>
@@ -98,7 +105,10 @@ export function ProfessionalHeader({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 px-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={avatarUrl || "/placeholder.svg"} alt={fullName} />
+                  <AvatarImage
+                    src={avatarUrl || '/placeholder.svg'}
+                    alt={fullName}
+                  />
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Abrir menú de usuario</span>
@@ -108,7 +118,9 @@ export function ProfessionalHeader({
               <DropdownMenuLabel>
                 <div className="flex flex-col">
                   <span className="font-medium leading-none">{fullName}</span>
-                  <span className="text-xs text-gray-500">{profile?.email ?? professional?.email ?? ""}</span>
+                  <span className="text-xs text-gray-500">
+                    {profile?.email ?? professional?.email ?? ''}
+                  </span>
                 </div>
               </DropdownMenuLabel>
 
@@ -131,5 +143,5 @@ export function ProfessionalHeader({
         </div>
       </div>
     </header>
-  )
+  );
 }
