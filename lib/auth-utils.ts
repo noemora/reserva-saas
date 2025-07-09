@@ -87,12 +87,10 @@ export function sanitizeUserData(data: {
   email: string;
   fullName: string;
   phone?: string;
-  userType: string;
 }) {
   return {
     email: data.email.trim().toLowerCase(),
     fullName: data.fullName.trim(),
     phone: data.phone?.trim() || null,
-    userType: data.userType,
   };
 }

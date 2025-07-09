@@ -94,7 +94,6 @@ export function RegisterForm() {
       email: formData.email,
       fullName: formData.fullName,
       phone: formData.phone,
-      userType: formData.userType,
     });
 
     const { error } = await signUp(sanitizedData.email, formData.password, {
