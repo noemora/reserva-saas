@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/lib/supabase';
+import { registerUser } from '@/actions/auth-actions';
 import type { AuthError, Session, User } from '@supabase/supabase-js';
 import type { Database } from '@/lib/database.types';
 
@@ -21,7 +22,6 @@ interface AuthState {
     email: string,
     password: string,
     metadata: {
-      email: string;
       full_name: string;
       phone: string;
       user_type: 'Cliente' | 'Profesional' | 'Empresa';
@@ -199,21 +199,21 @@ export const useAuthStore = create<AuthState>()(
         set({ loading: true, isLoading: true });
 
         try {
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: metadata,
-            },
+          // Usar la action del servidor que maneja mejor el registro
+          const result = await registerUser(email, password, {
+            full_name: metadata.full_name,
+            phone: metadata.phone,
+            user_type: metadata.user_type,
+            avatar_url: metadata.avatar_url,
           });
 
-          if (error) {
-            console.error('❌ Error en signUp:', error);
+          if (result.error) {
+            console.error('❌ Error en signUp:', result.error);
             set({ loading: false, isLoading: false });
-            return { error };
+            return { error: { message: result.error } as AuthError };
           }
 
-          if (data.user) {
+          if (result.user) {
             console.log('✅ Registro exitoso');
             set({ loading: false, isLoading: false });
             return {};
