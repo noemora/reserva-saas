@@ -91,7 +91,7 @@ async function createClientFromProfile(
         current_medications: null,
         insurance_provider: null,
         insurance_number: null,
-        preferred_language: 'es',
+        preferred_language: 'Español',
         communication_preferences: {
           email: true,
           sms: false,
