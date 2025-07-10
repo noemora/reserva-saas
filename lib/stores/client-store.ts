@@ -1,8 +1,12 @@
+/**
+ * Client Store - Manages client application state
+ * Follows SOLID principles and provides comprehensive client data management
+ */
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Profile } from '@/types/auth';
+import type { CompleteClient } from '@/types/database';
 import type {
-  ClientProfile,
   ClientBooking,
   AvailableService,
   BookingHistory,
@@ -17,12 +21,31 @@ import {
 
 export type ClientTab = 'dashboard' | 'bookings' | 'history' | 'profile';
 
+// Constants for better maintainability
+export const CLIENT_TABS = {
+  DASHBOARD: 'dashboard' as const,
+  BOOKINGS: 'bookings' as const,
+  HISTORY: 'history' as const,
+  PROFILE: 'profile' as const,
+} as const;
+
+export const BOOKING_STATUSES = {
+  CONFIRMED: 'confirmed' as const,
+  PENDING: 'pending' as const,
+  CANCELLED: 'cancelled' as const,
+  COMPLETED: 'completed' as const,
+} as const;
+
+/**
+ * Client state interface with segregated responsibilities
+ */
+
 interface ClientState {
   // Current state
   activeTab: ClientTab;
 
   // Data
-  profile: ClientProfile | null;
+  profile: CompleteClient | null;
   upcomingBookings: ClientBooking[];
   pastBookings: ClientBooking[];
   availableServices: AvailableService[];
@@ -34,16 +57,29 @@ interface ClientState {
 
   // Actions
   setActiveTab: (tab: ClientTab) => void;
-  setProfile: (profile: ClientProfile | null) => void;
+  setProfile: (profile: CompleteClient | null) => void;
 
   // Booking actions
   addBooking: (booking: ClientBooking) => void;
   updateBookingStatus: (id: string, status: ClientBooking['status']) => void;
   cancelBooking: (id: string) => void;
 
+  // Additional booking utilities
+  getBookingById: (id: string) => ClientBooking | undefined;
+  getTodaysBookings: () => ClientBooking[];
+  getUpcomingBookings: () => ClientBooking[];
+  validateBooking: (booking: Partial<ClientBooking>) => {
+    isValid: boolean;
+    errors: string[];
+  };
+
   // Service actions
   setSelectedService: (service: AvailableService | null) => void;
   setBookingModalOpen: (open: boolean) => void;
+
+  // Data refresh
+  refreshData: () => void;
+  clearAllData: () => void;
 
   // Load data
   loadData: () => void;
@@ -78,31 +114,141 @@ export const useClientStore = create<ClientState>()(
       setProfile: (profile) => set({ profile }),
 
       // Booking actions
-      addBooking: (booking) =>
-        set((s) => ({ upcomingBookings: [booking, ...s.upcomingBookings] })),
+      addBooking: (booking) => {
+        const validation = get().validateBooking(booking);
+        if (!validation.isValid) {
+          console.warn('Booking validation failed:', validation.errors);
+          return; // Don't add invalid booking
+        }
+        set((s) => ({ upcomingBookings: [booking, ...s.upcomingBookings] }));
+      },
 
       updateBookingStatus: (id, status) =>
-        set((s) => ({
-          upcomingBookings: s.upcomingBookings.map((b) =>
-            b.id === id ? { ...b, status } : b
-          ),
-        })),
+        set((s) => {
+          const bookingIndex = s.upcomingBookings.findIndex((b) => b.id === id);
+          if (bookingIndex === -1) return s; // Booking not found
+
+          const updatedBooking = {
+            ...s.upcomingBookings[bookingIndex],
+            status,
+          };
+
+          // If status is completed or cancelled, move to past bookings
+          if (status === 'completed' || status === 'cancelled') {
+            return {
+              upcomingBookings: s.upcomingBookings.filter((b) => b.id !== id),
+              pastBookings: [updatedBooking, ...s.pastBookings],
+            };
+          }
+
+          // Otherwise, just update the status in upcoming bookings
+          return {
+            upcomingBookings: s.upcomingBookings.map((b) =>
+              b.id === id ? updatedBooking : b
+            ),
+          };
+        }),
 
       cancelBooking: (id) =>
-        set((s) => ({
-          upcomingBookings: s.upcomingBookings.filter((b) => b.id !== id),
-          pastBookings: [
-            ...s.pastBookings,
-            {
-              ...s.upcomingBookings.find((b) => b.id === id)!,
-              status: 'cancelled',
-            },
-          ],
-        })),
+        set((s) => {
+          const bookingToCancel = s.upcomingBookings.find((b) => b.id === id);
+          if (!bookingToCancel) return s; // No booking found, no changes
+
+          return {
+            upcomingBookings: s.upcomingBookings.filter((b) => b.id !== id),
+            pastBookings: [
+              ...s.pastBookings,
+              {
+                ...bookingToCancel,
+                status: 'cancelled' as const,
+              },
+            ],
+          };
+        }),
 
       // Service actions
       setSelectedService: (service) => set({ selectedService: service }),
       setBookingModalOpen: (open) => set({ isBookingModalOpen: open }),
+
+      // Additional booking utilities
+      getBookingById: (id: string) => {
+        const state = get();
+        return [...state.upcomingBookings, ...state.pastBookings].find(
+          (b: ClientBooking) => b.id === id
+        );
+      },
+
+      getTodaysBookings: () => {
+        const state = get();
+        const today = new Date().toISOString().split('T')[0];
+        return state.upcomingBookings.filter(
+          (b: ClientBooking) => b.date === today
+        );
+      },
+
+      getUpcomingBookings: () => {
+        const state = get();
+        const today = new Date().toISOString().split('T')[0];
+        return state.upcomingBookings.filter(
+          (b: ClientBooking) => b.date >= today
+        );
+      },
+
+      validateBooking: (booking: Partial<ClientBooking>) => {
+        const errors: string[] = [];
+
+        if (!booking.id) errors.push('ID de reserva es requerido');
+        if (!booking.date) errors.push('Fecha es requerida');
+        if (!booking.professional) errors.push('Profesional es requerido');
+        if (!booking.clinic) errors.push('Clínica es requerida');
+        if (!booking.status) errors.push('Estado es requerido');
+
+        // Validate date format and future date
+        if (booking.date) {
+          const bookingDate = new Date(booking.date);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          if (isNaN(bookingDate.getTime())) {
+            errors.push('Formato de fecha inválido');
+          } else if (bookingDate < today) {
+            errors.push('La fecha no puede ser en el pasado');
+          }
+        }
+
+        return {
+          isValid: errors.length === 0,
+          errors,
+        };
+      },
+
+      // Data refresh
+      refreshData: () => {
+        set({
+          profile: getMockClientProfile(),
+          upcomingBookings: getMockUpcomingBookings(),
+          pastBookings: getMockPastBookings(),
+          availableServices: getMockAvailableServices(),
+          bookingHistory: getMockBookingHistory(),
+        });
+      },
+
+      clearAllData: () => {
+        set({
+          profile: null,
+          upcomingBookings: [],
+          pastBookings: [],
+          availableServices: [],
+          bookingHistory: {
+            total_bookings: 0,
+            completed_bookings: 0,
+            cancelled_bookings: 0,
+            no_show_bookings: 0,
+            total_spent: 0,
+            average_rating_given: 0,
+          },
+        });
+      },
 
       // Load data
       loadData: () => {

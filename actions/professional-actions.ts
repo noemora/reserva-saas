@@ -3,6 +3,11 @@
 import { supabaseServer } from '@/lib/supabase-server';
 import type { Database } from '@/lib/database.types';
 import { revalidatePath } from 'next/cache';
+import {
+  getCompleteProfessional,
+  updateProfessionalData,
+  type CompleteProfessional,
+} from '@/lib/helpers';
 
 type Professional = Database['public']['Tables']['professionals']['Row'];
 type ProfessionalInsert =
@@ -56,17 +61,12 @@ export async function getProfessional(
 
 export async function getProfessionalByUserId(
   userId: string
-): Promise<{ success: boolean; data?: Professional; error?: string }> {
+): Promise<{ success: boolean; data?: CompleteProfessional; error?: string }> {
   try {
-    const { data, error } = await supabaseServer
-      .from('professionals')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+    const data = await getCompleteProfessional(supabaseServer, userId);
 
-    if (error) {
-      console.error('Error getting professional by user:', error);
-      return { success: false, error: error.message };
+    if (!data) {
+      return { success: false, error: 'Professional not found' };
     }
 
     return { success: true, data };
@@ -76,12 +76,14 @@ export async function getProfessionalByUserId(
   }
 }
 
-export async function getProfessionalsByCompany(
-  companyId: string
-): Promise<{ success: boolean; data?: Professional[]; error?: string }> {
+export async function getProfessionalsByCompany(companyId: string): Promise<{
+  success: boolean;
+  data?: CompleteProfessional[];
+  error?: string;
+}> {
   try {
     const { data, error } = await supabaseServer
-      .from('professionals')
+      .from('complete_professionals')
       .select('*')
       .eq('company_id', companyId)
       .eq('is_active', true)
@@ -92,7 +94,7 @@ export async function getProfessionalsByCompany(
       return { success: false, error: error.message };
     }
 
-    return { success: true, data };
+    return { success: true, data: data as CompleteProfessional[] };
   } catch (error) {
     console.error('Error getting professionals by company:', error);
     return { success: false, error: 'Error interno del servidor' };
@@ -101,12 +103,12 @@ export async function getProfessionalsByCompany(
 
 export async function getAllProfessionals(): Promise<{
   success: boolean;
-  data?: Professional[];
+  data?: CompleteProfessional[];
   error?: string;
 }> {
   try {
     const { data, error } = await supabaseServer
-      .from('professionals')
+      .from('complete_professionals')
       .select('*')
       .eq('is_active', true)
       .order('name');
@@ -116,7 +118,7 @@ export async function getAllProfessionals(): Promise<{
       return { success: false, error: error.message };
     }
 
-    return { success: true, data };
+    return { success: true, data: data as CompleteProfessional[] };
   } catch (error) {
     console.error('Error getting professionals:', error);
     return { success: false, error: 'Error interno del servidor' };
@@ -124,21 +126,11 @@ export async function getAllProfessionals(): Promise<{
 }
 
 export async function updateProfessional(
-  professionalId: string,
+  userId: string,
   updates: ProfessionalUpdate
 ) {
   try {
-    const { data, error } = await supabaseServer
-      .from('professionals')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', professionalId)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error updating professional:', error);
-      return { success: false, error: error.message };
-    }
+    const data = await updateProfessionalData(supabaseServer, userId, updates);
 
     revalidatePath('/professional');
     revalidatePath('/company');

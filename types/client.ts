@@ -6,25 +6,17 @@ type ClientDBRow = Database['public']['Tables']['clients']['Row'];
 
 // Interfaz extendida para el cliente que combina Profile y datos específicos del cliente
 export interface ClientProfile extends Profile {
-  // Campos específicos del cliente desde la base de datos
-  date_of_birth?: string | null;
-  address?: string | null;
-  emergency_contact?: {
-    name: string;
-    phone: string;
-    relationship: string;
-  } | null;
-  medical_history?: string[] | null;
-  allergies?: string[] | null;
-  current_medications?: string[] | null;
-  insurance_provider?: string | null;
-  insurance_number?: string | null;
-  preferred_language?: string | null;
-  communication_preferences?: {
-    email: boolean;
-    sms: boolean;
-    phone: boolean;
-  } | null;
+  // Campos específicos del cliente desde la base de datos (basados en ClientDBRow)
+  date_of_birth?: ClientDBRow['date_of_birth'];
+  address?: ClientDBRow['address'];
+  emergency_contact?: ClientDBRow['emergency_contact'];
+  medical_history?: ClientDBRow['medical_history'];
+  allergies?: ClientDBRow['allergies'];
+  current_medications?: ClientDBRow['current_medications'];
+  insurance_provider?: ClientDBRow['insurance_provider'];
+  insurance_number?: ClientDBRow['insurance_number'];
+  preferred_language?: ClientDBRow['preferred_language'];
+  communication_preferences?: ClientDBRow['communication_preferences'];
 
   // Campos de compatibilidad con la UI existente
   name?: string; // Alias para full_name
@@ -50,8 +42,8 @@ export interface ClientBooking {
   notes?: string;
 }
 
-// Tipo extendido basado en la base de datos con JOINs
-export interface BookingWithDetails {
+// Tipo extendido basado en la base de datos con JOINs (específico para cliente)
+export interface ClientBookingWithDetails {
   id: string;
   client_id: string;
   professional_id: string;

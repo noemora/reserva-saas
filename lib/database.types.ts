@@ -45,15 +45,13 @@ export interface Database {
         Row: {
           id: string;
           user_id: string;
-          name: string;
-          email: string;
-          phone: string | null;
           address: string | null;
           website: string | null;
-          description: string | null;
-          logo_url: string | null;
           capacity: number | null;
           founded_year: number | null;
+          description: string | null;
+          services: string[] | null;
+          logo_url: string | null;
           rating: number;
           total_bookings: number;
           monthly_revenue: number;
@@ -64,15 +62,13 @@ export interface Database {
         Insert: {
           id?: string;
           user_id: string;
-          name: string;
-          email: string;
-          phone?: string | null;
           address?: string | null;
           website?: string | null;
-          description?: string | null;
-          logo_url?: string | null;
           capacity?: number | null;
           founded_year?: number | null;
+          description?: string | null;
+          services?: string[] | null;
+          logo_url?: string | null;
           rating?: number;
           total_bookings?: number;
           monthly_revenue?: number;
@@ -83,15 +79,13 @@ export interface Database {
         Update: {
           id?: string;
           user_id?: string;
-          name?: string;
-          email?: string;
-          phone?: string | null;
           address?: string | null;
           website?: string | null;
-          description?: string | null;
-          logo_url?: string | null;
           capacity?: number | null;
           founded_year?: number | null;
+          description?: string | null;
+          services?: string[] | null;
+          logo_url?: string | null;
           rating?: number;
           total_bookings?: number;
           monthly_revenue?: number;
@@ -105,20 +99,17 @@ export interface Database {
           id: string;
           user_id: string;
           company_id: string | null;
-          name: string;
-          title: string;
-          email: string;
-          phone: string | null;
+          title: string | null;
           license_number: string | null;
           experience: number | null;
           education: string | null;
           specialties: string[];
           biography: string | null;
-          avatar_url: string | null;
           rating: number;
           total_bookings: number;
           monthly_revenue: number;
           is_active: boolean;
+          member_since: string;
           created_at: string;
           updated_at: string;
         };
@@ -126,20 +117,17 @@ export interface Database {
           id?: string;
           user_id: string;
           company_id?: string | null;
-          name: string;
-          title: string;
-          email: string;
-          phone?: string | null;
+          title?: string | null;
           license_number?: string | null;
           experience?: number | null;
           education?: string | null;
           specialties?: string[];
           biography?: string | null;
-          avatar_url?: string | null;
           rating?: number;
           total_bookings?: number;
           monthly_revenue?: number;
           is_active?: boolean;
+          member_since?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -147,20 +135,17 @@ export interface Database {
           id?: string;
           user_id?: string;
           company_id?: string | null;
-          name?: string;
-          title?: string;
-          email?: string;
-          phone?: string | null;
+          title?: string | null;
           license_number?: string | null;
           experience?: number | null;
           education?: string | null;
           specialties?: string[];
           biography?: string | null;
-          avatar_url?: string | null;
           rating?: number;
           total_bookings?: number;
           monthly_revenue?: number;
           is_active?: boolean;
+          member_since?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -354,10 +339,7 @@ export interface Database {
       clients: {
         Row: {
           id: string;
-          user_id: string | null;
-          name: string;
-          email: string;
-          phone: string | null;
+          user_id: string;
           date_of_birth: string | null;
           address: string | null;
           emergency_contact: {
@@ -381,9 +363,8 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          user_id?: string | null;
-          name: string;
-          email: string;
+          user_id: string;
+          email?: string;
           phone?: string | null;
           date_of_birth?: string | null;
           address?: string | null;
@@ -408,10 +389,7 @@ export interface Database {
         };
         Update: {
           id?: string;
-          user_id?: string | null;
-          name?: string;
-          email?: string;
-          phone?: string | null;
+          user_id?: string;
           date_of_birth?: string | null;
           address?: string | null;
           emergency_contact?: {
@@ -432,6 +410,85 @@ export interface Database {
           } | null;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+    };
+    Views: {
+      complete_clients: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          email: string;
+          phone: string | null;
+          avatar_url: string | null;
+          date_of_birth: string | null;
+          address: string | null;
+          emergency_contact: {
+            name: string;
+            phone: string;
+            relationship: string;
+          } | null;
+          medical_history: string[] | null;
+          allergies: string[] | null;
+          current_medications: string[] | null;
+          insurance_provider: string | null;
+          insurance_number: string | null;
+          preferred_language: string | null;
+          communication_preferences: {
+            email: boolean;
+            sms: boolean;
+            phone: boolean;
+          } | null;
+          created_at: string;
+          updated_at: string;
+        };
+      };
+      complete_professionals: {
+        Row: {
+          id: string;
+          user_id: string;
+          company_id: string | null;
+          name: string;
+          email: string;
+          phone: string | null;
+          avatar_url: string | null;
+          title: string | null;
+          license_number: string | null;
+          experience: number | null;
+          education: string | null;
+          specialties: string[];
+          biography: string | null;
+          rating: number;
+          total_bookings: number;
+          monthly_revenue: number;
+          is_active: boolean;
+          member_since: string;
+          created_at: string;
+          updated_at: string;
+        };
+      };
+      complete_companies: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          email: string;
+          phone: string | null;
+          avatar_url: string | null;
+          address: string | null;
+          website: string | null;
+          capacity: number | null;
+          founded_year: number | null;
+          description: string | null;
+          services: string[] | null;
+          logo_url: string | null;
+          rating: number;
+          total_bookings: number;
+          monthly_revenue: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
         };
       };
     };
