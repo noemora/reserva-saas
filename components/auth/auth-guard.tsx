@@ -2,7 +2,6 @@
 
 import type React from 'react';
 
-import { useEffect } from 'react';
 import { redirect } from 'next/navigation';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { Loader2 } from 'lucide-react';
@@ -16,7 +15,10 @@ interface AuthGuardProps {
  * Redirige a /auth/login si no hay sesión.
  * Muestra un spinner mientras se comprueba el estado.
  */
-export function AuthGuard({ children, fallback }: AuthGuardProps) {
+export function AuthGuard({
+  children,
+  fallback,
+}: AuthGuardProps): React.ReactElement {
   const { session, profile, isLoading, loading, initialized } = useAuthStore();
 
   // No inicializar aquí - ya se hace en AuthProvider
@@ -29,25 +31,25 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
       loading,
       initialized,
     });
-    return (
-      fallback ?? (
-        <div
-          className="flex h-screen items-center justify-center bg-gray-50"
-          suppressHydrationWarning
-        >
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
-            <p className="text-gray-600">Cargando...</p>
-          </div>
+    return (fallback ?? (
+      <div
+        className="flex h-screen items-center justify-center bg-gray-50"
+        suppressHydrationWarning
+      >
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Cargando...</p>
         </div>
-      )
-    );
+      </div>
+    )) as React.ReactElement;
   }
 
   // Si no hay sesión, redirigir al login
   if (!session) {
     console.log('🚫 AuthGuard: No hay sesión, redirigiendo a login');
     redirect('/auth/login');
+    // Esta línea nunca se ejecutará debido al redirect, pero TypeScript la necesita
+    return <div></div>;
   }
 
   // Si hay sesión pero no perfil, mostrar error
@@ -74,5 +76,5 @@ export function AuthGuard({ children, fallback }: AuthGuardProps) {
     session: !!session,
     profile: !!profile,
   });
-  return <>{children}</>;
+  return (<>{children}</>) as React.ReactElement;
 }

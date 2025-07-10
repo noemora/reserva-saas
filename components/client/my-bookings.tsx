@@ -19,11 +19,7 @@ import {
 } from 'lucide-react';
 import { NewBookingModal } from './new-booking-modal';
 
-interface MyBookingsProps {
-  user: any;
-}
-
-export function MyBookings({ user }: MyBookingsProps) {
+export function MyBookings() {
   const [showNewBooking, setShowNewBooking] = useState(false);
 
   const stats = [

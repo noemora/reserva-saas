@@ -1,141 +1,159 @@
-"use server"
+'use server';
 
-import { supabaseServer } from "@/lib/supabase-server"
-import type { Database } from "@/lib/database.types"
-import { revalidatePath } from "next/cache"
+import { supabaseServer } from '@/lib/supabase-server';
+import type { Database } from '@/lib/database.types';
+import { revalidatePath } from 'next/cache';
+import {
+  getCompleteCompany,
+  updateCompanyData,
+  type CompleteCompany,
+} from '@/lib/helpers';
 
-type Company = Database["public"]["Tables"]["companies"]["Row"]
-type CompanyInsert = Database["public"]["Tables"]["companies"]["Insert"]
-type CompanyUpdate = Database["public"]["Tables"]["companies"]["Update"]
+type Company = Database['public']['Tables']['companies']['Row'];
+type CompanyInsert = Database['public']['Tables']['companies']['Insert'];
+type CompanyUpdate = Database['public']['Tables']['companies']['Update'];
 
 export async function createCompany(companyData: CompanyInsert) {
   try {
-    const { data, error } = await supabaseServer.from("companies").insert(companyData).select().single()
+    const { data, error } = await supabaseServer
+      .from('companies')
+      .insert(companyData)
+      .select()
+      .single();
 
     if (error) {
-      console.error("Error creating company:", error)
-      return { success: false, error: error.message }
+      console.error('Error creating company:', error);
+      return { success: false, error: error.message };
     }
 
-    revalidatePath("/company")
-    return { success: true, data }
+    revalidatePath('/company');
+    return { success: true, data };
   } catch (error) {
-    console.error("Error creating company:", error)
-    return { success: false, error: "Error interno del servidor" }
+    console.error('Error creating company:', error);
+    return { success: false, error: 'Error interno del servidor' };
   }
 }
 
-export async function getCompany(companyId: string): Promise<{ success: boolean; data?: Company; error?: string }> {
+export async function getCompany(
+  companyId: string
+): Promise<{ success: boolean; data?: Company; error?: string }> {
   try {
-    const { data, error } = await supabaseServer.from("companies").select("*").eq("id", companyId).single()
+    const { data, error } = await supabaseServer
+      .from('companies')
+      .select('*')
+      .eq('id', companyId)
+      .single();
 
     if (error) {
-      console.error("Error getting company:", error)
-      return { success: false, error: error.message }
+      console.error('Error getting company:', error);
+      return { success: false, error: error.message };
     }
 
-    return { success: true, data }
+    return { success: true, data };
   } catch (error) {
-    console.error("Error getting company:", error)
-    return { success: false, error: "Error interno del servidor" }
+    console.error('Error getting company:', error);
+    return { success: false, error: 'Error interno del servidor' };
   }
 }
 
 export async function getCompanyByUserId(
-  userId: string,
-): Promise<{ success: boolean; data?: Company; error?: string }> {
+  userId: string
+): Promise<{ success: boolean; data?: CompleteCompany; error?: string }> {
   try {
-    const { data, error } = await supabaseServer.from("companies").select("*").eq("user_id", userId).single()
+    const data = await getCompleteCompany(supabaseServer, userId);
 
-    if (error) {
-      console.error("Error getting company by user:", error)
-      return { success: false, error: error.message }
+    if (!data) {
+      return { success: false, error: 'Company not found' };
     }
 
-    return { success: true, data }
+    return { success: true, data };
   } catch (error) {
-    console.error("Error getting company by user:", error)
-    return { success: false, error: "Error interno del servidor" }
+    console.error('Error getting company by user:', error);
+    return { success: false, error: 'Error interno del servidor' };
   }
 }
 
-export async function getAllCompanies(): Promise<{ success: boolean; data?: Company[]; error?: string }> {
-  try {
-    const { data, error } = await supabaseServer.from("companies").select("*").eq("is_active", true).order("name")
-
-    if (error) {
-      console.error("Error getting companies:", error)
-      return { success: false, error: error.message }
-    }
-
-    return { success: true, data }
-  } catch (error) {
-    console.error("Error getting companies:", error)
-    return { success: false, error: "Error interno del servidor" }
-  }
-}
-
-export async function updateCompany(companyId: string, updates: CompanyUpdate) {
+export async function getAllCompanies(): Promise<{
+  success: boolean;
+  data?: CompleteCompany[];
+  error?: string;
+}> {
   try {
     const { data, error } = await supabaseServer
-      .from("companies")
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq("id", companyId)
-      .select()
-      .single()
+      .from('complete_companies')
+      .select('*')
+      .eq('is_active', true)
+      .order('name');
 
     if (error) {
-      console.error("Error updating company:", error)
-      return { success: false, error: error.message }
+      console.error('Error getting companies:', error);
+      return { success: false, error: error.message };
     }
 
-    revalidatePath("/company")
-    return { success: true, data }
+    return { success: true, data: data as CompleteCompany[] };
   } catch (error) {
-    console.error("Error updating company:", error)
-    return { success: false, error: "Error interno del servidor" }
+    console.error('Error getting companies:', error);
+    return { success: false, error: 'Error interno del servidor' };
+  }
+}
+
+export async function updateCompany(userId: string, updates: CompanyUpdate) {
+  try {
+    const data = await updateCompanyData(supabaseServer, userId, updates);
+
+    revalidatePath('/company');
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error updating company:', error);
+    return { success: false, error: 'Error interno del servidor' };
   }
 }
 
 export async function deleteCompany(companyId: string) {
   try {
-    const { error } = await supabaseServer.from("companies").delete().eq("id", companyId)
+    const { error } = await supabaseServer
+      .from('companies')
+      .delete()
+      .eq('id', companyId);
 
     if (error) {
-      console.error("Error deleting company:", error)
-      return { success: false, error: error.message }
+      console.error('Error deleting company:', error);
+      return { success: false, error: error.message };
     }
 
-    revalidatePath("/company")
-    return { success: true }
+    revalidatePath('/company');
+    return { success: true };
   } catch (error) {
-    console.error("Error deleting company:", error)
-    return { success: false, error: "Error interno del servidor" }
+    console.error('Error deleting company:', error);
+    return { success: false, error: 'Error interno del servidor' };
   }
 }
 
-export async function toggleCompanyStatus(companyId: string, isActive: boolean) {
+export async function toggleCompanyStatus(
+  companyId: string,
+  isActive: boolean
+) {
   try {
     const { data, error } = await supabaseServer
-      .from("companies")
+      .from('companies')
       .update({
         is_active: isActive,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", companyId)
+      .eq('id', companyId)
       .select()
-      .single()
+      .single();
 
     if (error) {
-      console.error("Error toggling company status:", error)
-      return { success: false, error: error.message }
+      console.error('Error toggling company status:', error);
+      return { success: false, error: error.message };
     }
 
-    revalidatePath("/company")
-    return { success: true, data }
+    revalidatePath('/company');
+    return { success: true, data };
   } catch (error) {
-    console.error("Error toggling company status:", error)
-    return { success: false, error: "Error interno del servidor" }
+    console.error('Error toggling company status:', error);
+    return { success: false, error: 'Error interno del servidor' };
   }
 }
 
@@ -143,40 +161,51 @@ export async function getCompanyStats(companyId: string) {
   try {
     // Get company bookings for stats
     const { data: bookings, error: bookingsError } = await supabaseServer
-      .from("bookings")
-      .select(`
+      .from('bookings')
+      .select(
+        `
         *,
         professionals!inner(company_id)
-      `)
-      .eq("professionals.company_id", companyId)
+      `
+      )
+      .eq('professionals.company_id', companyId);
 
     if (bookingsError) {
-      console.error("Error getting company bookings:", bookingsError)
-      return { success: false, error: bookingsError.message }
+      console.error('Error getting company bookings:', bookingsError);
+      return { success: false, error: bookingsError.message };
     }
 
     // Get company professionals
     const { data: professionals, error: profError } = await supabaseServer
-      .from("professionals")
-      .select("*")
-      .eq("company_id", companyId)
+      .from('professionals')
+      .select('*')
+      .eq('company_id', companyId);
 
     if (profError) {
-      console.error("Error getting company professionals:", profError)
-      return { success: false, error: profError.message }
+      console.error('Error getting company professionals:', profError);
+      return { success: false, error: profError.message };
     }
 
-    const today = new Date().toISOString().split("T")[0]
-    const todayBookings = bookings?.filter((b) => b.date === today) || []
-    const pendingBookings = bookings?.filter((b) => b.status === "pending") || []
-    const completedBookings = bookings?.filter((b) => b.status === "completed") || []
-    const activeProfessionals = professionals?.filter((p) => p.is_active) || []
+    const today = new Date().toISOString().split('T')[0];
+    const todayBookings = bookings?.filter((b) => b.date === today) || [];
+    const pendingBookings =
+      bookings?.filter((b) => b.status === 'pending') || [];
+    const completedBookings =
+      bookings?.filter((b) => b.status === 'completed') || [];
+    const activeProfessionals = professionals?.filter((p) => p.is_active) || [];
 
-    const monthlyRevenue = completedBookings.reduce((sum, booking) => sum + booking.price, 0)
-    const completionRate = bookings?.length ? (completedBookings.length / bookings.length) * 100 : 0
+    const monthlyRevenue = completedBookings.reduce(
+      (sum, booking) => sum + booking.price,
+      0
+    );
+    const completionRate = bookings?.length
+      ? (completedBookings.length / bookings.length) * 100
+      : 0;
     const cancellationRate = bookings?.length
-      ? (bookings.filter((b) => b.status === "cancelled").length / bookings.length) * 100
-      : 0
+      ? (bookings.filter((b) => b.status === 'cancelled').length /
+          bookings.length) *
+        100
+      : 0;
 
     const stats = {
       todayBookings: todayBookings.length,
@@ -187,11 +216,11 @@ export async function getCompanyStats(companyId: string) {
       completionRate,
       cancellationRate,
       averageRating: 4.5, // This would need to be calculated from reviews
-    }
+    };
 
-    return { success: true, data: stats }
+    return { success: true, data: stats };
   } catch (error) {
-    console.error("Error getting company stats:", error)
-    return { success: false, error: "Error interno del servidor" }
+    console.error('Error getting company stats:', error);
+    return { success: false, error: 'Error interno del servidor' };
   }
 }
