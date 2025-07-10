@@ -11,6 +11,8 @@ import type {
   AvailableService,
   BookingHistory,
 } from '@/types/client';
+import { ClientDataService } from '@/lib/services/client-data-service';
+// Keep mock data as fallback
 import {
   getMockClientProfile,
   getMockUpcomingBookings,
@@ -81,8 +83,9 @@ interface ClientState {
   refreshData: () => void;
   clearAllData: () => void;
 
-  // Load data
-  loadData: () => void;
+  // Load data (with real database integration)
+  loadData: (userId?: string) => Promise<void>;
+  loadDataSync: () => void; // Fallback for mock data
 }
 
 export const useClientStore = create<ClientState>()(
@@ -222,7 +225,7 @@ export const useClientStore = create<ClientState>()(
         };
       },
 
-      // Data refresh
+      // Data refresh using mock data (fallback)
       refreshData: () => {
         set({
           profile: getMockClientProfile(),
@@ -250,8 +253,62 @@ export const useClientStore = create<ClientState>()(
         });
       },
 
-      // Load data
-      loadData: () => {
+      // Load data from database
+      loadData: async (userId?: string) => {
+        if (!userId) {
+          console.warn('⚠️ ClientStore: No userId provided, using mock data');
+          get().loadDataSync();
+          return;
+        }
+
+        console.log('🔄 ClientStore: Loading data for userId:', userId);
+
+        try {
+          // Load profile
+          console.log('👤 ClientStore: Loading profile...');
+          const profile = await ClientDataService.getClientProfile(userId);
+
+          // Load bookings
+          console.log('📅 ClientStore: Loading bookings...');
+          const { upcoming, past } = await ClientDataService.getClientBookings(
+            userId
+          );
+
+          // Load services
+          console.log('🔧 ClientStore: Loading services...');
+          const availableServices =
+            await ClientDataService.getAvailableServices();
+
+          // Load booking history
+          console.log('📊 ClientStore: Loading booking history...');
+          const bookingHistory = await ClientDataService.getBookingHistory(
+            userId
+          );
+
+          console.log('✅ ClientStore: All data loaded successfully', {
+            hasProfile: !!profile,
+            upcomingCount: upcoming.length,
+            pastCount: past.length,
+            servicesCount: availableServices.length,
+          });
+
+          set({
+            profile,
+            upcomingBookings: upcoming,
+            pastBookings: past,
+            availableServices,
+            bookingHistory,
+          });
+        } catch (error) {
+          console.error('❌ ClientStore: Error loading client data:', error);
+          // Fallback to mock data on error
+          console.log('🔄 ClientStore: Falling back to mock data');
+          get().loadDataSync();
+        }
+      },
+
+      // Load mock data (synchronous fallback)
+      loadDataSync: () => {
         set({
           profile: getMockClientProfile(),
           upcomingBookings: getMockUpcomingBookings(),

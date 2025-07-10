@@ -16,11 +16,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-interface BookingHistoryProps {
-  user: any;
-}
-
-export function BookingHistory({ user }: BookingHistoryProps) {
+export function BookingHistory() {
   const [filter, setFilter] = useState('all');
 
   const bookingHistory = [

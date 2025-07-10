@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useClientStore } from '@/lib/stores/client-store';
 import { useAuthStore } from '@/lib/stores/auth-store';
+import { useClientData } from '@/hooks/use-client-data';
 import type { CompleteClient, ProfileRow } from '@/types/database';
 import {
   ProfileHeader,
@@ -21,11 +22,12 @@ import {
 } from './my-profile/index';
 
 export default function MyProfile() {
-  const { profile: clientProfile, setProfile } = useClientStore();
+  const { setProfile } = useClientStore();
   const { profile: authProfile, updateProfile } = useAuthStore();
+  const { profile: clientProfile, isLoading } = useClientData();
   const [isEditing, setIsEditing] = useState(false);
 
-  // Use CompleteClient if available, otherwise create from auth profile
+  // Use client profile (from database) if available, otherwise auth profile
   const profile: CompleteClient | ProfileRow | null =
     clientProfile || authProfile;
 
@@ -61,7 +63,7 @@ export default function MyProfile() {
     stateManager.handleCancel();
   };
 
-  if (!profile) {
+  if (!profile || isLoading) {
     return <LoadingState />;
   }
 
