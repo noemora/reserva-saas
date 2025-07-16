@@ -83,7 +83,7 @@ export async function getAllCompanies(): Promise<{
       .from('complete_companies')
       .select('*')
       .eq('is_active', true)
-      .order('name');
+      .order('full_name');
 
     if (error) {
       console.error('Error getting companies:', error);
@@ -187,7 +187,8 @@ export async function getCompanyStats(companyId: string) {
     }
 
     const today = new Date().toISOString().split('T')[0];
-    const todayBookings = bookings?.filter((b) => b.date === today) || [];
+    const todayBookings =
+      bookings?.filter((b) => b.booking_date === today) || [];
     const pendingBookings =
       bookings?.filter((b) => b.status === 'pending') || [];
     const completedBookings =

@@ -14,7 +14,7 @@ export const isCompleteClient = (
 export class ProfileDataService {
   static getDisplayName(profile: CompleteClient | ProfileRow): string {
     return isCompleteClient(profile)
-      ? profile.name
+      ? profile.full_name || 'Usuario'
       : profile.full_name || 'Usuario';
   }
 
@@ -40,7 +40,9 @@ export class ProfileDataService {
     }
 
     return {
-      name: isCompleteClient(profile) ? profile.name : profile.full_name || '',
+      name: isCompleteClient(profile)
+        ? profile.full_name || ''
+        : profile.full_name || '',
       phone: profile.phone || '',
       email: profile.email || '',
       avatar_url: profile.avatar_url || '',
@@ -54,7 +56,7 @@ export class ProfileDataService {
     return {
       name:
         clientProfile && isCompleteClient(clientProfile)
-          ? clientProfile.name
+          ? clientProfile.full_name || ''
           : authProfile?.full_name || '',
       phone: clientProfile?.phone || authProfile?.phone || '',
       email: clientProfile?.email || authProfile?.email || '',

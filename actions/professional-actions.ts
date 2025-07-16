@@ -87,7 +87,7 @@ export async function getProfessionalsByCompany(companyId: string): Promise<{
       .select('*')
       .eq('company_id', companyId)
       .eq('is_active', true)
-      .order('name');
+      .order('full_name');
 
     if (error) {
       console.error('Error getting professionals by company:', error);
@@ -111,7 +111,7 @@ export async function getAllProfessionals(): Promise<{
       .from('complete_professionals')
       .select('*')
       .eq('is_active', true)
-      .order('name');
+      .order('full_name');
 
     if (error) {
       console.error('Error getting professionals:', error);
@@ -209,10 +209,12 @@ export async function getProfessionalStats(professionalId: string) {
     thisWeek.setDate(thisWeek.getDate() - 7);
     const weekStart = thisWeek.toISOString().split('T')[0];
 
-    const todayBookings = bookings?.filter((b) => b.date === today) || [];
+    const todayBookings =
+      bookings?.filter((b) => b.booking_date === today) || [];
     const pendingBookings =
       bookings?.filter((b) => b.status === 'pending') || [];
-    const weeklyBookings = bookings?.filter((b) => b.date >= weekStart) || [];
+    const weeklyBookings =
+      bookings?.filter((b) => b.booking_date >= weekStart) || [];
     const completedBookings =
       bookings?.filter((b) => b.status === 'completed') || [];
 

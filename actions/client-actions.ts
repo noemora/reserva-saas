@@ -15,11 +15,11 @@ type ClientUpdate = Database['public']['Tables']['clients']['Update'];
 
 export async function createClient(clientData: ClientInsert) {
   try {
-    // Check if client already exists by email
+    // Check if client already exists by user_id
     const { data: existingClient, error: checkError } = await supabaseServer
       .from('clients')
       .select('*')
-      .eq('email', clientData.email)
+      .eq('user_id', clientData.user_id)
       .single();
 
     if (checkError && checkError.code !== 'PGRST116') {
@@ -94,10 +94,10 @@ export async function getClientByUserId(
 
 export async function getClientByEmail(
   email: string
-): Promise<{ success: boolean; data?: Client; error?: string }> {
+): Promise<{ success: boolean; data?: CompleteClient; error?: string }> {
   try {
     const { data, error } = await supabaseServer
-      .from('clients')
+      .from('complete_clients')
       .select('*')
       .eq('email', email)
       .single();
@@ -107,7 +107,7 @@ export async function getClientByEmail(
       return { success: false, error: error.message };
     }
 
-    return { success: true, data };
+    return { success: true, data: data as CompleteClient };
   } catch (error) {
     console.error('Error getting client by email:', error);
     return { success: false, error: 'Error interno del servidor' };
@@ -123,7 +123,7 @@ export async function getAllClients(): Promise<{
     const { data, error } = await supabaseServer
       .from('complete_clients')
       .select('*')
-      .order('name');
+      .order('full_name');
 
     if (error) {
       console.error('Error getting clients:', error);
@@ -181,9 +181,9 @@ export async function searchClients(
       .from('complete_clients')
       .select('*')
       .or(
-        `name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
+        `full_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
       )
-      .order('name')
+      .order('full_name')
       .limit(10);
 
     if (error) {
