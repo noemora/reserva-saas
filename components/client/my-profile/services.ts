@@ -25,7 +25,7 @@ export class ProfileService implements IProfileService {
   ): Promise<void> {
     await this.setProfile({
       ...profile,
-      name: formData.name,
+      full_name: formData.name,
       avatar_url: formData.avatar_url,
     });
   }

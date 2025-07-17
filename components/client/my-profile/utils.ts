@@ -1,7 +1,11 @@
 // Business logic utilities following Single Responsibility Principle (SRP)
 
 import type { CompleteClient, ProfileRow } from '@/types/database';
-import type { ProfileFormData } from './types';
+import type {
+  ProfileFormData,
+  EmergencyContact,
+  CommunicationPreferences,
+} from './types';
 
 // Type guard utility - Single responsibility: type checking
 export const isCompleteClient = (
@@ -10,11 +14,45 @@ export const isCompleteClient = (
   return prof !== null && 'date_of_birth' in prof;
 };
 
+// Emergency contact utility - Single responsibility: emergency contact validation
+export const isValidEmergencyContact = (
+  contact: unknown
+): contact is EmergencyContact => {
+  if (typeof contact !== 'object' || contact === null) {
+    return false;
+  }
+
+  const obj = contact as Record<string, unknown>;
+
+  return (
+    typeof obj.name === 'string' &&
+    typeof obj.phone === 'string' &&
+    typeof obj.relationship === 'string'
+  );
+};
+
+// Communication preferences utility - Single responsibility: preferences validation
+export const isValidCommunicationPreferences = (
+  prefs: unknown
+): prefs is CommunicationPreferences => {
+  if (typeof prefs !== 'object' || prefs === null) {
+    return false;
+  }
+
+  const obj = prefs as Record<string, unknown>;
+
+  return (
+    typeof obj.email === 'boolean' &&
+    typeof obj.sms === 'boolean' &&
+    typeof obj.phone === 'boolean'
+  );
+};
+
 // Profile data utilities - Single responsibility: data transformation
 export class ProfileDataService {
   static getDisplayName(profile: CompleteClient | ProfileRow): string {
     return isCompleteClient(profile)
-      ? profile.name
+      ? profile.full_name || 'Usuario'
       : profile.full_name || 'Usuario';
   }
 
@@ -40,7 +78,9 @@ export class ProfileDataService {
     }
 
     return {
-      name: isCompleteClient(profile) ? profile.name : profile.full_name || '',
+      name: isCompleteClient(profile)
+        ? profile.full_name || ''
+        : profile.full_name || '',
       phone: profile.phone || '',
       email: profile.email || '',
       avatar_url: profile.avatar_url || '',
@@ -54,7 +94,7 @@ export class ProfileDataService {
     return {
       name:
         clientProfile && isCompleteClient(clientProfile)
-          ? clientProfile.name
+          ? clientProfile.full_name || ''
           : authProfile?.full_name || '',
       phone: clientProfile?.phone || authProfile?.phone || '',
       email: clientProfile?.email || authProfile?.email || '',
