@@ -2,6 +2,20 @@
 
 import type { CompleteClient, ProfileRow } from '@/types/database';
 
+// Emergency contact interface
+export interface EmergencyContact {
+  name: string;
+  phone: string;
+  relationship: string;
+}
+
+// Communication preferences interface
+export interface CommunicationPreferences {
+  email: boolean;
+  sms: boolean;
+  phone: boolean;
+}
+
 // Segregated interfaces for different concerns
 export interface ProfileFormData {
   name: string;

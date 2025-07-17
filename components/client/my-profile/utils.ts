@@ -1,13 +1,49 @@
 // Business logic utilities following Single Responsibility Principle (SRP)
 
 import type { CompleteClient, ProfileRow } from '@/types/database';
-import type { ProfileFormData } from './types';
+import type {
+  ProfileFormData,
+  EmergencyContact,
+  CommunicationPreferences,
+} from './types';
 
 // Type guard utility - Single responsibility: type checking
 export const isCompleteClient = (
   prof: CompleteClient | ProfileRow | null
 ): prof is CompleteClient => {
   return prof !== null && 'date_of_birth' in prof;
+};
+
+// Emergency contact utility - Single responsibility: emergency contact validation
+export const isValidEmergencyContact = (
+  contact: unknown
+): contact is EmergencyContact => {
+  return (
+    typeof contact === 'object' &&
+    contact !== null &&
+    'name' in contact &&
+    'phone' in contact &&
+    'relationship' in contact &&
+    typeof (contact as any).name === 'string' &&
+    typeof (contact as any).phone === 'string' &&
+    typeof (contact as any).relationship === 'string'
+  );
+};
+
+// Communication preferences utility - Single responsibility: preferences validation
+export const isValidCommunicationPreferences = (
+  prefs: unknown
+): prefs is CommunicationPreferences => {
+  return (
+    typeof prefs === 'object' &&
+    prefs !== null &&
+    'email' in prefs &&
+    'sms' in prefs &&
+    'phone' in prefs &&
+    typeof (prefs as any).email === 'boolean' &&
+    typeof (prefs as any).sms === 'boolean' &&
+    typeof (prefs as any).phone === 'boolean'
+  );
 };
 
 // Profile data utilities - Single responsibility: data transformation

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, User, Phone, Heart } from 'lucide-react';
 import type { CompleteClient, ProfileRow } from '@/types/database';
-import { isCompleteClient } from './utils';
+import { isCompleteClient, isValidEmergencyContact } from './utils';
 
 interface EmergencyContactProps {
   profile: CompleteClient | ProfileRow | null;
@@ -12,7 +12,9 @@ interface EmergencyContactProps {
 
 export function EmergencyContact({ profile }: EmergencyContactProps) {
   const hasEmergencyContact =
-    isCompleteClient(profile) && profile.emergency_contact;
+    isCompleteClient(profile) &&
+    profile.emergency_contact &&
+    isValidEmergencyContact(profile.emergency_contact);
 
   return (
     <Card className="shadow-md">
@@ -25,7 +27,7 @@ export function EmergencyContact({ profile }: EmergencyContactProps) {
       <CardContent>
         {hasEmergencyContact &&
         isCompleteClient(profile) &&
-        profile.emergency_contact ? (
+        isValidEmergencyContact(profile.emergency_contact) ? (
           <div className="space-y-4">
             <div className="grid gap-4">
               <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg">

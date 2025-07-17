@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Globe, Bell, Mail, Phone } from 'lucide-react';
 import type { CompleteClient, ProfileRow } from '@/types/database';
-import { isCompleteClient } from './utils';
+import { isCompleteClient, isValidCommunicationPreferences } from './utils';
 
 interface PreferencesProps {
   profile: CompleteClient | ProfileRow | null;
@@ -17,7 +17,9 @@ export function Preferences({ profile }: PreferencesProps) {
     isCompleteClient(profile) && profile.preferred_language;
 
   const hasCommunicationPreferences =
-    isCompleteClient(profile) && profile.communication_preferences;
+    isCompleteClient(profile) &&
+    profile.communication_preferences &&
+    isValidCommunicationPreferences(profile.communication_preferences);
 
   const hasAnyPreferences =
     hasLanguagePreference || hasCommunicationPreferences;
@@ -47,7 +49,9 @@ export function Preferences({ profile }: PreferencesProps) {
 
         {hasCommunicationPreferences &&
           isCompleteClient(profile) &&
-          profile.communication_preferences && (
+          isValidCommunicationPreferences(
+            profile.communication_preferences
+          ) && (
             <div>
               <Label className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
                 <Bell className="h-4 w-4 text-purple-600" />
