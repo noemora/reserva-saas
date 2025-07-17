@@ -113,7 +113,7 @@ export async function getAllServices(): Promise<{
           id,
           user_id,
           title,
-          profiles!professionals_user_id_fkey(full_name, email, phone)
+          profiles!user_id(full_name, email, phone)
         ),
         workplaces(name, address)
       `

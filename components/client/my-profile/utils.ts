@@ -18,15 +18,16 @@ export const isCompleteClient = (
 export const isValidEmergencyContact = (
   contact: unknown
 ): contact is EmergencyContact => {
+  if (typeof contact !== 'object' || contact === null) {
+    return false;
+  }
+
+  const obj = contact as Record<string, unknown>;
+
   return (
-    typeof contact === 'object' &&
-    contact !== null &&
-    'name' in contact &&
-    'phone' in contact &&
-    'relationship' in contact &&
-    typeof (contact as any).name === 'string' &&
-    typeof (contact as any).phone === 'string' &&
-    typeof (contact as any).relationship === 'string'
+    typeof obj.name === 'string' &&
+    typeof obj.phone === 'string' &&
+    typeof obj.relationship === 'string'
   );
 };
 
@@ -34,15 +35,16 @@ export const isValidEmergencyContact = (
 export const isValidCommunicationPreferences = (
   prefs: unknown
 ): prefs is CommunicationPreferences => {
+  if (typeof prefs !== 'object' || prefs === null) {
+    return false;
+  }
+
+  const obj = prefs as Record<string, unknown>;
+
   return (
-    typeof prefs === 'object' &&
-    prefs !== null &&
-    'email' in prefs &&
-    'sms' in prefs &&
-    'phone' in prefs &&
-    typeof (prefs as any).email === 'boolean' &&
-    typeof (prefs as any).sms === 'boolean' &&
-    typeof (prefs as any).phone === 'boolean'
+    typeof obj.email === 'boolean' &&
+    typeof obj.sms === 'boolean' &&
+    typeof obj.phone === 'boolean'
   );
 };
 

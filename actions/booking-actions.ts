@@ -61,13 +61,13 @@ export async function getBooking(
         clients(
           id,
           user_id,
-          profiles!clients_user_id_fkey(full_name, email, phone)
+          profiles!user_id(full_name, email, phone)
         ),
         professionals(
           id,
           user_id,
           title,
-          profiles!professionals_user_id_fkey(full_name, email, phone)
+          profiles!user_id(full_name, email, phone)
         ),
         services(name, description),
         workplaces(name, address)
@@ -101,7 +101,7 @@ export async function getBookingsByClient(
           id,
           user_id,
           title,
-          profiles!professionals_user_id_fkey(full_name, email, phone)
+          profiles!user_id(full_name, email, phone)
         ),
         services(name, description),
         workplaces(name, address)
@@ -134,7 +134,7 @@ export async function getBookingsByProfessional(
         clients(
           id,
           user_id,
-          profiles!clients_user_id_fkey(full_name, email, phone)
+          profiles!user_id(full_name, email, phone)
         ),
         services(name, description),
         workplaces(name, address)
@@ -167,14 +167,14 @@ export async function getBookingsByCompany(
         clients(
           id,
           user_id,
-          profiles!clients_user_id_fkey(full_name, email, phone)
+          profiles!user_id(full_name, email, phone)
         ),
         professionals!inner(
           id,
           user_id,
           title,
           company_id,
-          profiles!professionals_user_id_fkey(full_name, email, phone)
+          profiles!user_id(full_name, email, phone)
         ),
         services(name, description),
         workplaces(name, address)
@@ -285,7 +285,7 @@ export async function getBookingsByDateRange(
         clients(
           id,
           user_id,
-          profiles!clients_user_id_fkey(full_name, email, phone)
+          profiles!user_id(full_name, email, phone)
         ),
         services(name, description),
         workplaces(name, address)
